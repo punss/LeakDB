@@ -25,8 +25,8 @@ leak_time_profile = ["abrupt", "incipient"]
 sim_step_minutes = 30
 
 # Set duration in hours
-durationHours = 24*365 # One Year
-timeStamp = pandas.date_range("2017-01-01 00:00", "2017-12-31 23:55", freq=str(sim_step_minutes)+"min")
+durationHours = 24*7 # One Year
+timeStamp = pandas.date_range("2017-01-01 00:00", "2017-01-07 23:55", freq=str(sim_step_minutes)+"min")
 
 #timeStamp = pandas.date_range("2017-12-01 00:00", "2017-12-30 23:55", freq="24h")
 #timeStamp = pandas.date_range("00:00", "23:55", freq="5min")
@@ -370,7 +370,7 @@ if __name__ == '__main__':
 
     t = time.time()
     
-    NumScenarios = 1000
+    NumScenarios = 100
     scArray = range(1, NumScenarios+1)
     
     numCores = multiprocessing.cpu_count()

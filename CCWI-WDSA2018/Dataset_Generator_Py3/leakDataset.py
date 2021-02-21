@@ -12,7 +12,7 @@ import pandas
 import time
 #import sys
 
-benchmark = os.getcwd()[:-17]+'Benchmarks\\'
+benchmark = os.getcwd()[:-21]+'Benchmarks/'
 try:
     os.makedirs(benchmark)
 except:
@@ -26,8 +26,8 @@ leak_time_profile = ["abrupt", "incipient"]
 sim_step_minutes = 30
 
 # Set duration in hours
-durationHours = 24*365 # One Year
-timeStamp = pandas.date_range("2018-01-01 00:00", "2018-12-31 23:55", freq=str(sim_step_minutes)+"min")
+durationHours = 24*7 # One Year
+timeStamp = pandas.date_range("2018-01-01 00:00", "2018-01-07 23:55", freq=str(sim_step_minutes)+"min")
 
 #timeStamp = pandas.date_range("2017-12-01 00:00", "2017-12-30 23:55", freq="24h")
 #timeStamp = pandas.date_range("00:00", "23:55", freq="5min")
@@ -59,7 +59,7 @@ def runScenarios(scNum):
                     if os.path.exists(netName):
                         shutil.rmtree(netName)
                     os.makedirs(netName)
-                    shutil.copyfile(inp_file, netName+'\\'+os.path.basename(wn.name))
+                    shutil.copyfile(inp_file, netName+'/'+os.path.basename(wn.name))
                 except:
                     pass 
             
@@ -71,6 +71,7 @@ def runScenarios(scNum):
             wn.options.time.quality_timestep = 0
             wn.options.time.report_timestep = 60*sim_step_minutes
             wn.options.time.pattern_timestep = 60*sim_step_minutes
+            wn.options.hydraulic.demand_model = Mode_Simulation
             
             results = {}
             # Set random seed
@@ -101,7 +102,7 @@ def runScenarios(scNum):
             
             # CREATE FOLDER EVERY SCENARIO-I
             labels = np.zeros(len(timeStamp))#.astype(int)
-            Sc = netName+'\\Scenario-'+str(scNum)
+            Sc = netName+'/Scenario-'+str(scNum)
             if os.path.exists(Sc):
                 shutil.rmtree(Sc)
             os.makedirs(Sc)
@@ -216,8 +217,8 @@ def runScenarios(scNum):
                         leak_node[step]._leak_end_control_name=str(leak_i)+'end'+str(ST+leak_step)
                         leak_node[step]._leak_start_control_name = str(leak_i)+'start'+str(ST+leak_step)
                         leak_node[step].add_leak(wn, area = leak_area[step],
-                                          start_time = leak_start_time,
-                                          end_time = leak_end_time)
+                                            start_time = leak_start_time,
+                                            end_time = leak_end_time)
                 
                         leakStarts[step] = timeStamp[ST]
                         leakStarts[step] = leakStarts[step]._date_repr + ' ' +leakStarts[step]._time_repr
@@ -235,8 +236,8 @@ def runScenarios(scNum):
                     leak_node[leak_i]._leak_end_control_name=str(leak_i)+'end'
                     leak_node[leak_i]._leak_start_control_name = str(leak_i)+'start'
                     leak_node[leak_i].add_leak(wn, area = leak_area[leak_i],
-                                      start_time = leak_start_time,
-                                      end_time = leak_end_time)
+                                        start_time = leak_start_time,
+                                        end_time = leak_end_time)
                     #if leak_type[leak_i] == 'abrupt':
                     leakStarts[leak_i] = timeStamp[ST-1]
                     leakStarts[leak_i] = leakStarts[leak_i]._date_repr + ' ' +leakStarts[leak_i]._time_repr
@@ -247,10 +248,10 @@ def runScenarios(scNum):
                 
             ## SAVE EPANET INPUT FILE 
             # Write inp file
-            wn.write_inpfile(Sc+'\\'+inp+'_Scenario-'+str(scNum)+'.inp')
+            wn.write_inpfile(Sc+'/'+inp+'_Scenario-'+str(scNum)+'.inp')
             
             ## RUN SIMULATION WITH WNTR SIMULATOR
-            sim = wntr.sim.WNTRSimulator(wn, mode=Mode_Simulation)
+            sim = wntr.sim.WNTRSimulator(wn)
             results = sim.run_sim()
             if ((all(results.node['pressure']> 0)) !=True)==True:
                 print("not run")
@@ -271,18 +272,18 @@ def runScenarios(scNum):
             
             if results:
                 ## CREATE FOLDERS FOR SCENARIOS
-                pressures_Folder = Sc+'\\Pressures'
+                pressures_Folder = Sc+'/Pressures'
                 createFolder(pressures_Folder)
-                dem_Folder = Sc+'\\Demands'
+                dem_Folder = Sc+'/Demands'
                 createFolder(dem_Folder)
-                flows_Folder = Sc+'\\Flows'
+                flows_Folder = Sc+'/Flows'
                 createFolder(flows_Folder)
-                leaks_Folder = Sc+'\\Leaks'
+                leaks_Folder = Sc+'/Leaks'
                 createFolder(leaks_Folder)
                 
                 ## CREATE CSV FILES     
                 for leak_i in range(nmLeaksNode):
-                    fleaks2 = open(leaks_Folder+'\\Leak_'+str(leak_node[leak_i])+'_info.csv', 'w')
+                    fleaks2 = open(leaks_Folder+'/Leak_'+str(leak_node[leak_i])+'_info.csv', 'w')
                     fleaks2.write("{} , {}\n".format('Description', 'Value'))
                     fleaks2.write("{} , {}\n".format('Leak Node', str(leak_node[leak_i])))
                     fleaks2.write("{} , {}\n".format('Leak Area', str(leak_area[leak_i])))
@@ -294,13 +295,13 @@ def runScenarios(scNum):
                     fleaks2.close()
                     
                     # Leaks CSV
-                    leaks = results.node['leak_demand',:,str(leak_node[leak_i])][0:-1]
+                    leaks = results.node['leak_demand'][str(leak_node[leak_i])][0:-1]
                     leaks = [ round(elem, 6) *3600  for elem in leaks ]    
                     fleaks = pandas.DataFrame(leaks)
                     fleaks['Timestamp'] = timeStamp
                     fleaks = fleaks.set_index(['Timestamp'])
                     fleaks.columns.values[0]='Description'
-                    fleaks.to_csv(leaks_Folder+'\\Leak_'+str(leak_node[leak_i])+'_demand.csv')
+                    fleaks.to_csv(leaks_Folder+'/Leak_'+str(leak_node[leak_i])+'_demand.csv')
                     del fleaks
                 
                 # Labels scenarios
@@ -308,7 +309,7 @@ def runScenarios(scNum):
                 flabels['Timestamp'] = timeStamp
                 flabels = flabels.set_index(['Timestamp'])
                 flabels.columns.values[0]='Label'
-                flabels.to_csv(Sc+'\\Labels.csv')
+                flabels.to_csv(Sc+'/Labels.csv')
                 del flabels
                 
                 for j in range(0, wn.num_nodes):
@@ -322,7 +323,7 @@ def runScenarios(scNum):
                     fpres['Timestamp'] = timeStamp
                     fpres = fpres.set_index(['Timestamp'])
                     fpres.columns.values[0]='Value'
-                    file_pres = pressures_Folder+'\\Node_'+str(wn.node_name_list[j])+'.csv'
+                    file_pres = pressures_Folder+'/Node_'+str(wn.node_name_list[j])+'.csv'
                     fpres.to_csv(file_pres)            
                     del fpres, pres
                     
@@ -334,7 +335,7 @@ def runScenarios(scNum):
                     fdem['Timestamp'] = timeStamp
                     fdem = fdem.set_index(['Timestamp'])
                     fdem.columns.values[0]='Value'
-                    fdem.to_csv(dem_Folder+'\\Node_'+str(wn.node_name_list[j])+'.csv')
+                    fdem.to_csv(dem_Folder+'/Node_'+str(wn.node_name_list[j])+'.csv')
                     del fdem, dem
                     
                 for j in range(0, wn.num_links):
@@ -346,10 +347,10 @@ def runScenarios(scNum):
                     fflows['Timestamp'] = timeStamp
                     fflows = fflows.set_index(['Timestamp'])
                     fflows.columns.values[0]='Value'
-                    fflows.to_csv(flows_Folder+'\\Link_'+str(wn.link_name_list[j])+'.csv')
+                    fflows.to_csv(flows_Folder+'/Link_'+str(wn.link_name_list[j])+'.csv')
                     del fflows, flows
             
-                fscenariosinfo = open(Sc+'\\Scenario-'+str(scNum)+'_info.csv', 'w')
+                fscenariosinfo = open(Sc+'/Scenario-'+str(scNum)+'_info.csv', 'w')
                 fscenariosinfo.write("Description , Value\n")     
                 fscenariosinfo.write("{} , {}\n".format('Network_Name', inp))
                 fscenariosinfo.write("{} , {}\n".format('Duration', str(durationHours)+' hours'))
@@ -379,21 +380,22 @@ def runScenarios(scNum):
 if __name__ == '__main__':
 
     t = time.time()
-    
-    NumScenarios = 1001
+    print(t)
+    NumScenarios = 101
     scArray = range(1, NumScenarios)
     
-    numCores = multiprocessing.cpu_count()
-    p = multiprocessing.Pool(numCores)
-    p.map(runScenarios, list(range(1, NumScenarios)))
-    p.close()
-    p.join()
-    
+    # numCores = multiprocessing.cpu_count()
+    # p = multiprocessing.Pool(numCores)
+    # p.map(runScenarios, list(range(1, NumScenarios)))
+    # p.close()
+    # p.join()
+    for i in range(1, NumScenarios):
+        runScenarios(i)
     #runScenarios(4)
     
     labelScenarios = []
     for i in scArray:
-        if len(os.listdir(benchmark + INP +'\\Scenario-'+str(i)+'\\')):
+        if len(os.listdir(benchmark + INP +'/Scenario-'+str(i)+'/')):
             labelScenarios.append(1.0)
         else:
             labelScenarios.append(0.0)
@@ -402,7 +404,7 @@ if __name__ == '__main__':
     flabels2['Scenario'] = scArray
     flabels2 = flabels2.set_index(['Scenario'])
     flabels2.columns.values[0]='Label'
-    flabels2.to_csv(benchmark+ INP+'\\Labels.csv')
+    flabels2.to_csv(benchmark+ INP+'/Labels.csv')
     del flabels2, labelScenarios
 
     print('Total Elapsed time is '+str(time.time() - t) + ' seconds.')
