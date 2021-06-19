@@ -26,8 +26,8 @@ leak_time_profile = ["abrupt", "incipient"]
 sim_step_minutes = 30
 
 # Set duration in hours
-durationHours = 24*7 # One Year
-timeStamp = pandas.date_range("2018-01-01 00:00", "2018-01-07 23:55", freq=str(sim_step_minutes)+"min")
+durationHours = 24*365 # One Year
+timeStamp = pandas.date_range("2018-01-01 00:00", "2018-12-31 23:55", freq=str(sim_step_minutes)+"min")
 
 #timeStamp = pandas.date_range("2017-12-01 00:00", "2017-12-30 23:55", freq="24h")
 #timeStamp = pandas.date_range("00:00", "23:55", freq="5min")
@@ -35,20 +35,20 @@ timeStamp = pandas.date_range("2018-01-01 00:00", "2018-01-07 23:55", freq=str(s
 
 labelScenarios = []
 uncertainty_Topology = 'NO'
-INP = "Net1"
+INP = "Net1_old"
 print(["Run input file: ", INP])
 inp_file = 'networks/' + INP + '.inp'
 
 # RUN SCENARIOS
 def runScenarios(scNum):
-
+    print('This is a completely new run')
     itsok = False
     while itsok != True:
         try:
             qunc = np.arange(0, 0.25 ,0.05)
                 
             # Path of EPANET Input File
-            print("Scenarios: "+str(scNum))
+            print("Scenario: "+str(scNum))
             
             wn = wntr.network.WaterNetworkModel(inp_file)
             inp = os.path.basename(wn.name)[0:-4]
@@ -86,7 +86,12 @@ def runScenarios(scNum):
             if scNum == 1:
                 nmLeaksNode = 0
             else:
-                nmLeaksNode = int(round(np.random.uniform(0,2)))#leak off =0
+                nmLeaksNode = int(round(np.random.uniform(0,1))) #leak off =0
+
+            if nmLeaksNode is 0: #Displaying if there is a leak
+                print("There isn't a leak in the system")
+            else:
+                print("There is a leak in the system")
             
             qunc_index = int(round(np.random.uniform(len(qunc)-1)))
             uncertainty_Length = qunc[qunc_index]
@@ -123,6 +128,7 @@ def runScenarios(scNum):
             qext_mtempbase_demand=ql+np.random.rand(mtempbase_demand)*(qu-ql)
             
             for w, junction in enumerate(wn.junction_name_list):
+                # print('Entered')
                 wn.get_node(junction).demand_timeseries_list[0].base_value = qext_mtempbase_demand[w] #wn.query_node_attribute('base_demand')
                 pattern_name = 'P_'+junction
                 patts = genDem()
@@ -132,35 +138,35 @@ def runScenarios(scNum):
             ###########################################################################
             ## SET UNCERTAINTY PARAMETER
             # Uncertainty Length
-            tempLengths = wn.query_link_attribute('length')
-            tempLengths = np.array([tempLengths[i] for i, line in enumerate(tempLengths)])
-            tmp = list(map(lambda x: x * uncertainty_Length, tempLengths))
-            ql=tempLengths-tmp
-            qu=tempLengths+tmp
-            mlength=len(tempLengths)
-            qext=ql+np.random.rand(mlength)*(qu-ql)
+            # tempLengths = wn.query_link_attribute('length')
+            # tempLengths = np.array([tempLengths[i] for i, line in enumerate(tempLengths)])
+            # tmp = list(map(lambda x: x * uncertainty_Length, tempLengths))
+            # ql=tempLengths-tmp
+            # qu=tempLengths+tmp
+            # mlength=len(tempLengths)
+            # qext=ql+np.random.rand(mlength)*(qu-ql)
                 
-            # Uncertainty Diameter
-            tempDiameters = wn.query_link_attribute('diameter')
-            tempDiameters = np.array([tempDiameters[i] for i, line in enumerate(tempDiameters)])
-            tmp = list(map(lambda x: x * uncertainty_Diameter, tempDiameters))
-            ql=tempDiameters-tmp
-            qu=tempDiameters+tmp
-            dem_diameter=len(tempDiameters)
-            diameters=ql+np.random.rand(dem_diameter)*(qu-ql)
+            # # Uncertainty Diameter
+            # tempDiameters = wn.query_link_attribute('diameter')
+            # tempDiameters = np.array([tempDiameters[i] for i, line in enumerate(tempDiameters)])
+            # tmp = list(map(lambda x: x * uncertainty_Diameter, tempDiameters))
+            # ql=tempDiameters-tmp
+            # qu=tempDiameters+tmp
+            # dem_diameter=len(tempDiameters)
+            # diameters=ql+np.random.rand(dem_diameter)*(qu-ql)
                 
-            # Uncertainty Roughness
-            tempRoughness = wn.query_link_attribute('roughness')
-            tempRoughness = np.array([tempRoughness[i] for i, line in enumerate(tempRoughness)])
-            tmp = list(map(lambda x: x * uncertainty_Roughness, tempRoughness))
-            ql=tempRoughness-tmp
-            qu=tempRoughness+tmp
-            dem_roughness=len(tempRoughness)
-            qextR=ql+np.random.rand(dem_roughness)*(qu-ql)
-            for w, line1 in enumerate(qextR):
-                wn.get_link(wn.link_name_list[w]).roughness=line1
-                wn.get_link(wn.link_name_list[w]).length=qext[w]
-                wn.get_link(wn.link_name_list[w]).diameter=diameters[w]
+            # # Uncertainty Roughness
+            # tempRoughness = wn.query_link_attribute('roughness')
+            # tempRoughness = np.array([tempRoughness[i] for i, line in enumerate(tempRoughness)])
+            # tmp = list(map(lambda x: x * uncertainty_Roughness, tempRoughness))
+            # ql=tempRoughness-tmp
+            # qu=tempRoughness+tmp
+            # dem_roughness=len(tempRoughness)
+            # qextR=ql+np.random.rand(dem_roughness)*(qu-ql)
+            # for w, line1 in enumerate(qextR):
+            #     wn.get_link(wn.link_name_list[w]).roughness=line1
+            #     wn.get_link(wn.link_name_list[w]).length=qext[w]
+            #     wn.get_link(wn.link_name_list[w]).diameter=diameters[w]
                 
             ###########################################################################    
             
@@ -203,6 +209,7 @@ def runScenarios(scNum):
                 ET = end_of_failure[leak_i]
                 MT = int(np.round(np.random.uniform(ST+1,ET)))
                 if leak_type[leak_i] == 'incipient':
+                    print('There was an incipient leak')
                     maxHole = np.random.uniform(0.02, 0.2)
                     increment = maxHole/(MT-ST) 
                     leak_step_increment = np.arange(0, maxHole , increment)
@@ -227,7 +234,8 @@ def runScenarios(scNum):
                         leak_peak_time[leak_i] = timeStamp[MT-1]._date_repr+' '+timeStamp[MT-1]._time_repr
         
                         leak_step = leak_step + 1
-                else:     # abrupt  
+                else:
+                    print('There was an abrupt leak')     # abrupt  
                     MT = ET
                     leak_diameter[leak_i] = np.random.uniform(0.02, 0.2)
                     leak_area[leak_i]=3.14159*(leak_diameter[leak_i]/2)**2
@@ -244,6 +252,8 @@ def runScenarios(scNum):
                     leakEnds[leak_i] = timeStamp[ET-1]
                     leakEnds[leak_i] = leakEnds[leak_i]._date_repr + ' ' +leakEnds[leak_i]._time_repr
                     leak_peak_time[leak_i] = timeStamp[MT-1]._date_repr+' '+timeStamp[MT-1]._time_repr
+                
+                print("Done with the leak")
         
                 
             ## SAVE EPANET INPUT FILE 
@@ -251,8 +261,11 @@ def runScenarios(scNum):
             wn.write_inpfile(Sc+'/'+inp+'_Scenario-'+str(scNum)+'.inp')
             
             ## RUN SIMULATION WITH WNTR SIMULATOR
+            print('1')
             sim = wntr.sim.WNTRSimulator(wn)
+            print('2')
             results = sim.run_sim()
+            print('3')
             if ((all(results.node['pressure']> 0)) !=True)==True:
                 print("not run")
                 scNum = scNum + 1
@@ -271,9 +284,11 @@ def runScenarios(scNum):
                 os.makedirs(path)
             
             if results:
+                print('bruh')
                 ## CREATE FOLDERS FOR SCENARIOS
                 pressures_Folder = Sc+'/Pressures'
                 createFolder(pressures_Folder)
+                print('bruh2')
                 dem_Folder = Sc+'/Demands'
                 createFolder(dem_Folder)
                 flows_Folder = Sc+'/Flows'
@@ -371,7 +386,8 @@ def runScenarios(scNum):
             else:
                 print('results empty')
                 return -1
-        except:
+        except Exception as ex:
+            print(ex)
             itsok = False
             
     return 1

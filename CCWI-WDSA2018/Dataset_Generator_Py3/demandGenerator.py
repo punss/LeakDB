@@ -18,7 +18,7 @@ def genDem():
     # Create yearly component
     days = 365
     
-    T=(288/6)*days # one year period in five minute intervals
+    T=(288/6)*days # one year period in half hour intervals
     w=2*np.pi/T
     k=np.arange(1, days*288/6+1 ,1) # number of time steps in time series
     n=ny[0][0] # number of fourier coefficients
@@ -33,7 +33,7 @@ def genDem():
     yearOffset = np.dot(Hy, AyR)
     
     # Create weekly component
-    T=(288/6)*7 #one week period in five minute intervals
+    T=(288/6)*7 #one week period in half hour intervals
     w=2*np.pi/T
     k=np.arange(1, days*288/6+1 ,1) # number of time steps in time series
     n=nw[0][0] # number of fourier coefficients
@@ -59,5 +59,5 @@ def genDem():
     demFinal = []
     for d in dem:
         demFinal.append(d[0])
-      
+
     return demFinal
