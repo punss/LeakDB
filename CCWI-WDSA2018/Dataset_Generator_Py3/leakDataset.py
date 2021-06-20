@@ -22,7 +22,7 @@ except:
 Mode_Simulation = 'PDD'#'PDD'#'PDD'
 
 # Leak types
-leak_time_profile = ["abrupt"]
+leak_time_profile = ["abrupt"]*2
 sim_step_minutes = 30
 
 # Set duration in hours
