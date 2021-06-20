@@ -10,7 +10,7 @@ import shutil
 #import csv
 import pandas
 import time
-#import sys
+import sys
 
 benchmark = os.getcwd()[:-21]+'Benchmarks/'
 try:
@@ -41,7 +41,7 @@ inp_file = 'networks/' + INP + '.inp'
 
 # RUN SCENARIOS
 def runScenarios(scNum):
-    print('This is a completely new run')
+    # print('This is a completely new run')
     itsok = False
     while itsok != True:
         try:
@@ -209,7 +209,7 @@ def runScenarios(scNum):
                 ET = end_of_failure[leak_i]
                 MT = int(np.round(np.random.uniform(ST+1,ET)))
                 if leak_type[leak_i] == 'incipient':
-                    print('There was an incipient leak')
+                    # print('There was an incipient leak')
                     maxHole = np.random.uniform(0.02, 0.2)
                     increment = maxHole/(MT-ST) 
                     leak_step_increment = np.arange(0, maxHole , increment)
@@ -235,7 +235,7 @@ def runScenarios(scNum):
         
                         leak_step = leak_step + 1
                 else:
-                    print('There was an abrupt leak')     # abrupt  
+                    # print('There was an abrupt leak')     # abrupt  
                     MT = ET
                     leak_diameter[leak_i] = np.random.uniform(0.02, 0.2)
                     leak_area[leak_i]=3.14159*(leak_diameter[leak_i]/2)**2
@@ -253,7 +253,7 @@ def runScenarios(scNum):
                     leakEnds[leak_i] = leakEnds[leak_i]._date_repr + ' ' +leakEnds[leak_i]._time_repr
                     leak_peak_time[leak_i] = timeStamp[MT-1]._date_repr+' '+timeStamp[MT-1]._time_repr
                 
-                print("Done with the leak")
+                # print("Done with the leak")
         
                 
             ## SAVE EPANET INPUT FILE 
@@ -261,11 +261,12 @@ def runScenarios(scNum):
             wn.write_inpfile(Sc+'/'+inp+'_Scenario-'+str(scNum)+'.inp')
             
             ## RUN SIMULATION WITH WNTR SIMULATOR
-            print('1')
+            # print('1')
             sim = wntr.sim.WNTRSimulator(wn)
-            print('2')
+            # print('2')
             results = sim.run_sim()
-            print('3')
+            print("Finished simulation for scenario {}.".format(scNum))
+
             if ((all(results.node['pressure']> 0)) !=True)==True:
                 print("not run")
                 scNum = scNum + 1
@@ -284,11 +285,11 @@ def runScenarios(scNum):
                 os.makedirs(path)
             
             if results:
-                print('bruh')
+                # print('bruh')
                 ## CREATE FOLDERS FOR SCENARIOS
                 pressures_Folder = Sc+'/Pressures'
                 createFolder(pressures_Folder)
-                print('bruh2')
+                # print('bruh2')
                 dem_Folder = Sc+'/Demands'
                 createFolder(dem_Folder)
                 flows_Folder = Sc+'/Flows'
@@ -400,14 +401,22 @@ if __name__ == '__main__':
     NumScenarios = 101
     scArray = range(1, NumScenarios)
     
-    # numCores = multiprocessing.cpu_count()
-    # p = multiprocessing.Pool(numCores)
-    # p.map(runScenarios, list(range(1, NumScenarios)))
-    # p.close()
-    # p.join()
-    for i in range(1, NumScenarios):
-        runScenarios(i)
-    #runScenarios(4)
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "m":
+            print("Dataset will be generated using {} threads.".format(os.cpu_count()))
+            numCores = multiprocessing.cpu_count()
+            p = multiprocessing.Pool(numCores)
+            p.map(runScenarios, list(range(1, NumScenarios)))
+            p.close()
+            p.join()
+        else:
+            print("Use m argument for multiprocessing. Exiting.")
+            exit()
+    else:
+        print("Dataset will be generated using the main process.")
+        for i in range(1, NumScenarios):
+            runScenarios(i)
+
     
     labelScenarios = []
     for i in scArray:
