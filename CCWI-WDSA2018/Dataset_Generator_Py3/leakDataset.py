@@ -22,7 +22,7 @@ except:
 Mode_Simulation = 'PDD'#'PDD'#'PDD'
 
 # Leak types
-leak_time_profile = ["abrupt"]*2
+leak_time_profile = ["abrupt", "incipient"]
 sim_step_minutes = 30
 
 # Set duration in hours
@@ -175,7 +175,7 @@ def runScenarios(scNum):
             # Add leak node with 2 starttime end time
             leak_node = {}
             leak_diameter = {}
-            leak_area = {}
+            leak_area = {} 
             leak_type = {}
             time_of_failure = {}
             end_of_failure = {}
@@ -420,7 +420,7 @@ if __name__ == '__main__':
     
     labelScenarios = []
     for i in scArray:
-        if len(os.listdir(benchmark + INP +'/Scenario-'+str(i)+'/')):
+        if len(os.listdir(benchmark + INP +'/Scenario-'+str(i)+'/Leaks')):
             labelScenarios.append(1.0)
         else:
             labelScenarios.append(0.0)
