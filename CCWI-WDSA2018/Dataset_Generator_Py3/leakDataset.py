@@ -137,36 +137,36 @@ def runScenarios(scNum):
             
             ###########################################################################
             ## SET UNCERTAINTY PARAMETER
-            # Uncertainty Length
-            # tempLengths = wn.query_link_attribute('length')
-            # tempLengths = np.array([tempLengths[i] for i, line in enumerate(tempLengths)])
-            # tmp = list(map(lambda x: x * uncertainty_Length, tempLengths))
-            # ql=tempLengths-tmp
-            # qu=tempLengths+tmp
-            # mlength=len(tempLengths)
-            # qext=ql+np.random.rand(mlength)*(qu-ql)
+            Uncertainty Length
+            tempLengths = wn.query_link_attribute('length')
+            tempLengths = np.array([tempLengths[i] for i, line in enumerate(tempLengths)])
+            tmp = list(map(lambda x: x * uncertainty_Length, tempLengths))
+            ql=tempLengths-tmp
+            qu=tempLengths+tmp
+            mlength=len(tempLengths)
+            qext=ql+np.random.rand(mlength)*(qu-ql)
                 
-            # # Uncertainty Diameter
-            # tempDiameters = wn.query_link_attribute('diameter')
-            # tempDiameters = np.array([tempDiameters[i] for i, line in enumerate(tempDiameters)])
-            # tmp = list(map(lambda x: x * uncertainty_Diameter, tempDiameters))
-            # ql=tempDiameters-tmp
-            # qu=tempDiameters+tmp
-            # dem_diameter=len(tempDiameters)
-            # diameters=ql+np.random.rand(dem_diameter)*(qu-ql)
+            # Uncertainty Diameter
+            tempDiameters = wn.query_link_attribute('diameter')
+            tempDiameters = np.array([tempDiameters[i] for i, line in enumerate(tempDiameters)])
+            tmp = list(map(lambda x: x * uncertainty_Diameter, tempDiameters))
+            ql=tempDiameters-tmp
+            qu=tempDiameters+tmp
+            dem_diameter=len(tempDiameters)
+            diameters=ql+np.random.rand(dem_diameter)*(qu-ql)
                 
-            # # Uncertainty Roughness
-            # tempRoughness = wn.query_link_attribute('roughness')
-            # tempRoughness = np.array([tempRoughness[i] for i, line in enumerate(tempRoughness)])
-            # tmp = list(map(lambda x: x * uncertainty_Roughness, tempRoughness))
-            # ql=tempRoughness-tmp
-            # qu=tempRoughness+tmp
-            # dem_roughness=len(tempRoughness)
-            # qextR=ql+np.random.rand(dem_roughness)*(qu-ql)
-            # for w, line1 in enumerate(qextR):
-            #     wn.get_link(wn.link_name_list[w]).roughness=line1
-            #     wn.get_link(wn.link_name_list[w]).length=qext[w]
-            #     wn.get_link(wn.link_name_list[w]).diameter=diameters[w]
+            # Uncertainty Roughness
+            tempRoughness = wn.query_link_attribute('roughness')
+            tempRoughness = np.array([tempRoughness[i] for i, line in enumerate(tempRoughness)])
+            tmp = list(map(lambda x: x * uncertainty_Roughness, tempRoughness))
+            ql=tempRoughness-tmp
+            qu=tempRoughness+tmp
+            dem_roughness=len(tempRoughness)
+            qextR=ql+np.random.rand(dem_roughness)*(qu-ql)
+            for w, line1 in enumerate(qextR):
+                wn.get_link(wn.link_name_list[w]).roughness=line1
+                wn.get_link(wn.link_name_list[w]).length=qext[w]
+                wn.get_link(wn.link_name_list[w]).diameter=diameters[w]
                 
             ###########################################################################    
             
