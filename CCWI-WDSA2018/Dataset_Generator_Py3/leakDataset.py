@@ -22,7 +22,7 @@ except:
 Mode_Simulation = 'PDD'#'PDD'#'PDD'
 
 # Leak types
-leak_time_profile = ["abrupt", "incipient"]
+leak_time_profile = ["abrupt", "abrupt"]
 sim_step_minutes = 30
 
 # Set duration in hours
@@ -35,7 +35,7 @@ timeStamp = pandas.date_range("2018-01-01 00:00", "2018-12-31 23:55", freq=str(s
 
 labelScenarios = []
 uncertainty_Topology = 'NO'
-INP = "Net1_old"
+INP = "Hanoi_CMH"
 print(["Run input file: ", INP])
 inp_file = 'networks/' + INP + '.inp'
 
@@ -137,8 +137,8 @@ def runScenarios(scNum):
             
             ###########################################################################
             ## SET UNCERTAINTY PARAMETER
-            Uncertainty Length
-            tempLengths = wn.query_link_attribute('length')
+            # Uncertainty Length
+            '''tempLengths = wn.query_link_attribute('length')
             tempLengths = np.array([tempLengths[i] for i, line in enumerate(tempLengths)])
             tmp = list(map(lambda x: x * uncertainty_Length, tempLengths))
             ql=tempLengths-tmp
@@ -167,7 +167,7 @@ def runScenarios(scNum):
                 wn.get_link(wn.link_name_list[w]).roughness=line1
                 wn.get_link(wn.link_name_list[w]).length=qext[w]
                 wn.get_link(wn.link_name_list[w]).diameter=diameters[w]
-                
+            '''    
             ###########################################################################    
             
             ## ADD A LEAK NODE 
@@ -398,7 +398,7 @@ if __name__ == '__main__':
 
     t = time.time()
     print(t)
-    NumScenarios = 101
+    NumScenarios = 11
     scArray = range(1, NumScenarios)
     
     if len(sys.argv) == 2:
