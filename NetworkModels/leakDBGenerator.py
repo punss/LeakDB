@@ -21,12 +21,14 @@ Mode_Simulation = 'PDD'
 
 # Leak types
 leak_time_profile = ["abrupt", "incipient"]
-sim_step_minutes = 15
+sim_step_minutes = 30
 
 # Set duration
-num_days = 120
+num_days = 365
 durationHours = 24*num_days
 timeStamp = pandas.date_range("2017-01-01 00:00", periods=durationHours*(60/sim_step_minutes), freq=str(sim_step_minutes)+"min")
+
+
 
 # timeStamp = pandas.date_range("2017-12-01 00:00", "2017-12-30 23:55", freq="24h")
 # timeStamp = pandas.date_range("00:00", "23:55", freq="5min")
@@ -35,7 +37,7 @@ timeStamp = pandas.date_range("2017-01-01 00:00", periods=durationHours*(60/sim_
 labelScenarios = []
 uncertainty_Topology = 'NO'
 # INP = "Hanoi_CMH"
-INP = "Net1"
+INP = "Hanoi_CMH"
 
 
 # RUN SCENARIOS
@@ -85,20 +87,20 @@ def runScenarios(scNum):
     # Number of leaks at the same junction in day
     LEAK_LIST_TANK_JUNCTIONS = wn.junction_name_list+wn.tank_name_list
 
-    nmLeaksNode = int(round(np.random.uniform(0, 2)))
+    nmLeaksNode = int(round(np.random.uniform(0, 1)))
 
     # qunc_index = int(round(np.random.uniform(len(qunc)-1)))
-    qunc_index = 0
-    uncertainty_Length = qunc[qunc_index]
-
     # qunc_index = int(round(np.random.uniform(len(qunc)-1)))
-    uncertainty_Diameter = qunc[qunc_index]
-
+    # uncertainty_Length = qunc[qunc_index]
+    
     # qunc_index = int(round(np.random.uniform(len(qunc)-1)))
-    uncertainty_Roughness = qunc[qunc_index]
-
+    # uncertainty_Diameter = qunc[qunc_index]
+    
     # qunc_index = int(round(np.random.uniform(len(qunc)-1)))
-    uncertainty_base_demand = qunc[qunc_index]
+    # uncertainty_Roughness = qunc[qunc_index]
+    
+    # qunc_index = int(round(np.random.uniform(len(qunc)-1)))
+    uncertainty_base_demand = qunc[0]
 
     # CREATE FOLDER EVERY SCENARIO-I
     labels = np.zeros(len(timeStamp))  # .astype(int)
@@ -114,7 +116,16 @@ def runScenarios(scNum):
     wn._patterns = {}
     # tempbase_demand = wn.query_node_attribute('base_demand')
     tempbase_demand = wn.query_node_attribute('demand_timeseries_list')
-    tempbase_demand = np.array([tempbase_demand[line].base_demand_list()[0] for line in tempbase_demand])
+    tempbase_demand = np.array([tempbase_demand[i].base_demand_list()[0] for i, line in enumerate(tempbase_demand)])
+    # tempbase_demand = np.array([tempbase_demand[line].base_demand_list()[0] for line in tempbase_demand])
+
+    # temp = []
+
+    # for line in tempbase_demand:
+    #     temp.append(tempbase_demand[line].base_demand_list()[0])
+
+    # tempbase_demand = np.array(temp)
+
     # tmp = map(lambda x: x * uncertainty_base_demand, tempbase_demand)
     tmp = tempbase_demand * uncertainty_base_demand
     ql = tempbase_demand-tmp
@@ -134,7 +145,7 @@ def runScenarios(scNum):
 
     # SET UNCERTAINTY PARAMETER
     # Uncertainty Length
-    tempLengths = wn.query_link_attribute('length')
+    '''tempLengths = wn.query_link_attribute('length')
     tempLengths = np.array([tempLengths[line] for line in tempLengths])
     # tmp = map(lambda x: x * uncertainty_Length, tempLengths)
     tmp = tempLengths * uncertainty_Length
@@ -166,7 +177,7 @@ def runScenarios(scNum):
         wn.get_link(wn.link_name_list[w]).roughness = line1
         wn.get_link(wn.link_name_list[w]).length = qext[w]
         wn.get_link(wn.link_name_list[w]).diameter = diameters[w]
-
+'''
     # ADD A LEAK NODE
     # Add leak node with 2 starttime end time
     leak_node = {}
@@ -270,7 +281,7 @@ def runScenarios(scNum):
     wn.write_inpfile(Sc+'/'+inp+'_Scenario-'+str(scNum)+'.inp')
 
     # RUN SIMULATION WITH WNTR SIMULATOR
-    sim = wntr.sim.WNTRSimulator(wn, mode=Mode_Simulation)
+    sim = wntr.sim.WNTRSimulator(wn)
     results = sim.run_sim()
     if ((all(results.node['pressure'] > 0)) is not True) is True:
         print("not run")
@@ -376,9 +387,14 @@ def runScenarios(scNum):
         fscenariosinfo.write("{} , {}\n".format('Duration', str(durationHours)+' hours'))
         fscenariosinfo.write("{} , {}\n".format('Time_Step', str(wn.options.time.report_timestep/60)+' min'))
         fscenariosinfo.write("{} , {}\n".format('Uncertainty_Topology_(%)', uncertainty_Topology))
-        fscenariosinfo.write("{} , {}\n".format('Uncertainty_Length_(%)', uncertainty_Length*100))
-        fscenariosinfo.write("{} , {}\n".format('Uncertainty_Diameter_(%)', uncertainty_Diameter*100))
-        fscenariosinfo.write("{} , {}\n".format('Uncertainty_Roughness_(%)', uncertainty_Roughness*100))
+        try:
+            fscenariosinfo.write("{} , {}\n".format('Uncertainty_Length_(%)', uncertainty_Length*100))
+            fscenariosinfo.write("{} , {}\n".format('Uncertainty_Diameter_(%)', uncertainty_Diameter*100))
+            fscenariosinfo.write("{} , {}\n".format('Uncertainty_Roughness_(%)', uncertainty_Roughness*100))
+        except:
+            fscenariosinfo.write("{} , {}\n".format('Uncertainty_Length_(%)', 0*100))
+            fscenariosinfo.write("{} , {}\n".format('Uncertainty_Diameter_(%)', 0*100))
+            fscenariosinfo.write("{} , {}\n".format('Uncertainty_Roughness_(%)', 0*100))
         #for j in range(0, wn.num_links):
         #    fscenariosinfo.write("{} , {}\n".format('Link_Status_'+wn.link_name_list[j], str(results.link['status', 0, wn.link_name_list[j]])))
         fscenariosinfo.close()
@@ -400,9 +416,12 @@ if __name__ == '__main__':
     
     NumScenarios = 3
     scArray = range(1, NumScenarios+1)
-    
+
+    # for i in range(1, NumScenarios+1):
+    #     runScenarios(i)
+
     numCores = multiprocessing.cpu_count()
-    p = multiprocessing.Pool(1)
+    p = multiprocessing.Pool(numCores)
     p.map(runScenarios, range(1, NumScenarios+1))
     p.close()
     p.join()
